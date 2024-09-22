@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Layout, Input, Button, Card, Typography, Space, message, Spin, Progress, Slider, InputNumber } from 'antd';
+import { Layout, Input, Button, Card, Typography, Space, message, Spin, Progress, Slider } from 'antd';
 import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
@@ -23,7 +23,7 @@ function App() {
     if (taskId) {
       interval = setInterval(() => {
         checkTaskStatus(taskId);
-      }, 1000);
+      }, 2000);
     }
     return () => clearInterval(interval);
   }, [taskId]);
@@ -57,7 +57,7 @@ function App() {
 
       if (status === 'completed') {
         setOptimizedPrompt(statusMessage);
-        setAudioUrl(file_url);
+        setAudioUrl(`${API_URL}${file_url}`);  // 전체 URL 설정
         setIsLoading(false);
         setTaskId(null);
         message.success('Music generated successfully!');
@@ -74,7 +74,7 @@ function App() {
 
   const handleDownload = () => {
     if (audioUrl) {
-      window.open(`${API_URL}${audioUrl}`, '_blank');
+      window.open(audioUrl, '_blank');
     }
   };
 
@@ -106,12 +106,14 @@ function App() {
               </Space>
               <Space>
                 <span>Number of generations:</span>
-                <InputNumber
+                <Slider
                   min={1}
-                  max={10}
+                  max={5}
                   value={numGenerations}
                   onChange={setNumGenerations}
+                  style={{ width: 200 }}
                 />
+                <span>{numGenerations}</span>
               </Space>
               <Button
                 type="primary"
@@ -140,7 +142,7 @@ function App() {
               </Paragraph>
               {audioUrl && (
                 <>
-                  <audio controls src={`${API_URL}${audioUrl}`} style={{ width: '100%' }} />
+                  <audio controls src={audioUrl} style={{ width: '100%' }} />
                   <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload}>
                     Download Music
                   </Button>
