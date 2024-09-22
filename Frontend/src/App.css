@@ -1,0 +1,68 @@
+@import 'antd/dist/antd.css';
+
+.layout {
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+.content {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo-text {
+  margin-left: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #10a37f;
+}
+
+.chat-container {
+  height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.message {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.user-message {
+  background-color: #e6f7ff;
+  text-align: right;
+}
+
+.ai-message {
+  background-color: #f6ffed;
+}
+
+.input-container {
+  margin-top: 20px;
+}
+
+.ant-input {
+  border-radius: 8px;
+}
+
+.ant-btn-primary {
+  background-color: #10a37f;
+  border-color: #10a37f;
+  border-radius: 8px;
+}
+
+.ant-btn-primary:hover, .ant-btn-primary:focus {
+  background-color: #0d8c6f;
+  border-color: #0d8c6f;
+}

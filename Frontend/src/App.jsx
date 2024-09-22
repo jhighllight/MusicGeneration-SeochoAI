@@ -1,0 +1,157 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Layout, Input, Button, Card, Typography, Space, message, Spin, Progress, Slider, InputNumber } from 'antd';
+import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
+
+const { Header, Content } = Layout;
+const { Title, Paragraph } = Typography;
+
+const API_URL = 'http://localhost:8000';
+
+function App() {
+  const [input, setInput] = useState('');
+  const [duration, setDuration] = useState(10);
+  const [numGenerations, setNumGenerations] = useState(1);
+  const [optimizedPrompt, setOptimizedPrompt] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [taskId, setTaskId] = useState(null);
+
+  useEffect(() => {
+    let interval;
+    if (taskId) {
+      interval = setInterval(() => {
+        checkTaskStatus(taskId);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [taskId]);
+
+  const handleGenerateMusic = async () => {
+    setIsLoading(true);
+    setProgress(0);
+    setOptimizedPrompt('');
+    setAudioUrl('');
+
+    try {
+      const response = await axios.post(`${API_URL}/api/generate-music`, {
+        prompt: input,
+        duration: duration,
+        num_generations: numGenerations,
+      });
+      setTaskId(response.data.task_id);
+    } catch (error) {
+      console.error('Error generating music:', error);
+      message.error('Failed to start music generation. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const checkTaskStatus = async (id) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/task/${id}`);
+      const { status, message: statusMessage, progress, file_url } = response.data;
+
+      setProgress(progress);
+
+      if (status === 'completed') {
+        setOptimizedPrompt(statusMessage);
+        setAudioUrl(file_url);
+        setIsLoading(false);
+        setTaskId(null);
+        message.success('Music generated successfully!');
+      } else if (status === 'failed') {
+        setIsLoading(false);
+        setTaskId(null);
+        message.error(`Failed to generate music: ${statusMessage}`);
+      }
+    } catch (error) {
+      console.error('Error checking task status:', error);
+      message.error('Failed to check task status');
+    }
+  };
+
+  const handleDownload = () => {
+    if (audioUrl) {
+      window.open(`${API_URL}${audioUrl}`, '_blank');
+    }
+  };
+
+  return (
+    <Layout className="layout">
+      <Header className="header">
+        <Title level={3} style={{ color: 'white', margin: 0 }}>AI Music Generator</Title>
+      </Header>
+      <Content className="content">
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Card>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <Input.TextArea
+                placeholder="Describe the music you want to generate..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                autoSize={{ minRows: 3, maxRows: 5 }}
+              />
+              <Space>
+                <span>Duration (seconds):</span>
+                <Slider
+                  min={5}
+                  max={30}
+                  value={duration}
+                  onChange={setDuration}
+                  style={{ width: 200 }}
+                />
+                <span>{duration}s</span>
+              </Space>
+              <Space>
+                <span>Number of generations:</span>
+                <InputNumber
+                  min={1}
+                  max={10}
+                  value={numGenerations}
+                  onChange={setNumGenerations}
+                />
+              </Space>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={handleGenerateMusic}
+                disabled={isLoading || !input.trim()}
+              >
+                Generate Music
+              </Button>
+            </Space>
+          </Card>
+
+          {isLoading && (
+            <Card>
+              <Spin spinning={isLoading}>
+                <Progress percent={progress} status="active" />
+                <Paragraph>Generating your music... {progress}% complete</Paragraph>
+              </Spin>
+            </Card>
+          )}
+
+          {optimizedPrompt && (
+            <Card title="Generated Music">
+              <Paragraph>
+                <strong>Generation Message:</strong> {optimizedPrompt}
+              </Paragraph>
+              {audioUrl && (
+                <>
+                  <audio controls src={`${API_URL}${audioUrl}`} style={{ width: '100%' }} />
+                  <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload}>
+                    Download Music
+                  </Button>
+                </>
+              )}
+            </Card>
+          )}
+        </Space>
+      </Content>
+    </Layout>
+  );
+}
+
+export default App;
