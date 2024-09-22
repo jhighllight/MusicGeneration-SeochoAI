@@ -25,7 +25,7 @@ class AIModelHandler:
         self.processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
         self.model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small").to(self.device)
 
-        self.sampling_rate = self.model.config.audio_codec_kwargs.get("sample_rate", 32000)
+        self.sampling_rate = self.model.config.audio_encoder.sampling_rate
         logger.info(f"Model initialized with sampling rate: {self.sampling_rate}")
 
     async def generate_optimized_prompt(self, user_input: str) -> str:
