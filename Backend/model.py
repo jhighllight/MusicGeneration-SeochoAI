@@ -9,6 +9,7 @@ import io
 import aiohttp
 from typing import Tuple
 from prompt import MUSIC_GENERATION_PROMPT
+from openai import OpenAI
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -16,8 +17,10 @@ logger = logging.getLogger(__name__)
 
 class AIModelHandler:
     def __init__(self):
-        self.gpt4o_api_key = os.getenv("OPENAI_API_KEY")
-        self.gpt4o_endpoint = "https://api.openai.com/v1/chat/completions"
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        if not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY is not set in the environment variables")
+        self.client = OpenAI(api_key=self.openai_api_key)
         
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         logger.info(f"Using device: {self.device}")
@@ -29,29 +32,25 @@ class AIModelHandler:
         logger.info(f"Model initialized with sampling rate: {self.sampling_rate}")
 
     async def generate_optimized_prompt(self, user_input: str) -> str:
-        async with aiohttp.ClientSession() as session:
-            payload = {
-                "model": "gpt-4o-mini",
-                "messages": [
+        try:
+            response = await asyncio.to_thread(
+                self.client.chat.completions.create,
+                model="gpt-4o-mini",
+                messages=[
                     {"role": "system", "content": "You are a music description optimizer. Convert the user's input into a concise, keyword-rich description for music generation."},
                     {"role": "user", "content": MUSIC_GENERATION_PROMPT.format(user_input=user_input)}
                 ],
-                "max_tokens": 100
-            }
-            headers = {
-                "Authorization": f"Bearer {self.gpt4o_api_key}",
-                "Content-Type": "application/json"
-            }
-            try:
-                async with session.post(self.gpt4o_endpoint, json=payload, headers=headers) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return data['choices'][0]['message']['content'].strip()
-                    else:
-                        raise Exception(f"GPT-4o-mini API error: {response.status}")
-            except Exception as e:
-                logger.error(f"Error in generate_optimized_prompt: {str(e)}")
-                raise
+                max_tokens=100,
+                n=1,
+                temperature=0.7,
+            )
+            return response.choices[0].message.content.strip()
+        except openai.error.OpenAIError as e:
+            logger.error(f"OpenAI API error: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error in generate_optimized_prompt: {str(e)}")
+            raise
 
     async def generate_music(self, prompt: str, duration: int = 10, num_samples: int = 1) -> AudioSegment:
         try:
@@ -98,7 +97,7 @@ class AIModelHandler:
 
     async def process_music_generation(self, user_input: str, duration: int = 10) -> Tuple[str, AudioSegment]:
         try:
-            optimized_prompt = await self.generate_optimized_prompt(user_input)
+            optimized_prompts = [choice.message.content.strip() for choice in response.choices]
             logger.info(f"Optimized prompt: {optimized_prompt}")
             
             audio_segment = await self.generate_music(optimized_prompt, duration)
