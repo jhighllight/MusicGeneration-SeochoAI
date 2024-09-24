@@ -10,6 +10,7 @@ import asyncio
 import soundfile as sf
 from type import MusicGenerationRequest, MusicGenerationResponse, TaskStatusResponse
 from model import AIModelHandler
+import openai
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,12 +36,26 @@ model_handler = AIModelHandler()
 
 tasks = {}
 
+# @app.post("/api/generate-music", response_model=MusicGenerationResponse)
+# async def generate_music(request: MusicGenerationRequest, background_tasks: BackgroundTasks):
+#     task_id = str(uuid.uuid4())
+#     tasks[task_id] = {"status": "pending", "progress": 0}
+#     background_tasks.add_task(generate_music_task, task_id, request.prompt, request.duration, request.num_generations)
+#     return MusicGenerationResponse(task_id=task_id)
+
 @app.post("/api/generate-music", response_model=MusicGenerationResponse)
 async def generate_music(request: MusicGenerationRequest, background_tasks: BackgroundTasks):
     task_id = str(uuid.uuid4())
     tasks[task_id] = {"status": "pending", "progress": 0}
-    background_tasks.add_task(generate_music_task, task_id, request.prompt, request.duration, request.num_generations)
+    
+    # OpenAI API를 통해 프롬프트 생성
+    optimized_prompt = await model_handler.generate_optimized_prompt(request.prompt)
+    logger.info(f"Optimized prompt: {optimized_prompt}")
+    
+    # 음악 생성 작업 추가
+    background_tasks.add_task(generate_music_task, task_id, optimized_prompt, request.duration, request.num_generations)
     return MusicGenerationResponse(task_id=task_id)
+
 
 @app.get("/api/task/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(task_id: str):
