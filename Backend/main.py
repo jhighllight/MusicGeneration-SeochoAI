@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 AUDIO_DIR = "generated_music"
 
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
 app = FastAPI()
 
 app.add_middleware(
