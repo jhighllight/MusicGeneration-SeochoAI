@@ -74,3 +74,9 @@ MUSICGEN은 사용자 입력을 기반으로 AI를 활용하여 독특한 음악
 ## 주의사항
 
 - 이 프로젝트는 OpenAI API와 Facebook의 MusicGen 모델을 사용합니다. 적절한 API 키와 모델 사용 권한이 필요합니다.
+
+## 레퍼런스
+
+- Kreuk, F., Synnaeve, G., Polyak, A., Singer, U., Défossez, A., Copet, J., Parikh, D., Taigman, Y., & Adi, Y. (2023). AudioGen: Textually Guided Audio Generation.
+- Zhang, Y., Ikemiya, Y., Choi, W., Murata, N., Martínez-Ramírez, M. A., Lin, L., Xia, G., Liao, W., Mitsufuji, Y., & Dixon, S. (2024). Instruct-MusicGen: Unlocking Text-to-Music Editing for Music Language Models via Instruction Tuning.
+- Copet, J., Kreuk, F., Gat, I., Remez, T., Kant, D., Synnaeve, G., Adi, Y., & Défossez, A. (2023). Simple and Controllable Music Generation.
