@@ -5,8 +5,6 @@ import torch
 from transformers import AutoProcessor, MusicgenForConditionalGeneration
 import numpy as np
 from pydub import AudioSegment
-import io
-import aiohttp
 from typing import Tuple
 from prompt import MUSIC_GENERATION_PROMPT
 from openai import OpenAI
@@ -97,7 +95,7 @@ class AIModelHandler:
 
     async def process_music_generation(self, user_input: str, duration: int = 10) -> Tuple[str, AudioSegment]:
         try:
-            optimized_prompts = [choice.message.content.strip() for choice in response.choices]
+            optimized_prompt = await self.generate_optimized_prompt(user_input)
             logger.info(f"Optimized prompt: {optimized_prompt}")
             
             audio_segment = await self.generate_music(optimized_prompt, duration)
