@@ -8,6 +8,7 @@ from pydub import AudioSegment
 from typing import Tuple
 from prompt import MUSIC_GENERATION_PROMPT
 from openai import OpenAI
+import asyncio
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +44,7 @@ class AIModelHandler:
                 temperature=0.7,
             )
             return response.choices[0].message.content.strip()
-        except openai.error.OpenAIError as e:
+        except OpenAI.error.OpenAIError as e:
             logger.error(f"OpenAI API error: {str(e)}")
             raise
         except Exception as e:
