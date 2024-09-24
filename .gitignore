@@ -1,0 +1,9 @@
+# 환경 변수 파일
+Backend/.env
+
+# Node.js 관련 파일
+Frontend/package-lock.json
+Frontend/node_modules/
+
+# Python 캐시 파일
+Backend/__pycache__/
