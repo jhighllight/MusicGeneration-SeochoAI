@@ -33,6 +33,9 @@ MUSICGEN은 사용자 입력을 기반으로 AI를 활용하여 독특한 음악
 
 ## 시작하기
 
+**Python 3.11** (권장)
+- [공식 Python 웹사이트](https://www.python.org/downloads/release/python-3110/)에서 Python 3.11을 다운로드하고 설치할 수 있습니다.
+
 1. 프로젝트 클론:
    ```
    git clone [프로젝트 레포지토리 URL]
