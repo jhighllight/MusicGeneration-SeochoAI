@@ -56,7 +56,6 @@ async def generate_music(request: MusicGenerationRequest, background_tasks: Back
     background_tasks.add_task(generate_music_task, task_id, optimized_prompt, request.duration, request.num_generations)
     return MusicGenerationResponse(task_id=task_id)
 
-
 @app.get("/api/task/{task_id}", response_model=TaskStatusResponse)
 async def get_task_status(task_id: str):
     if task_id not in tasks:

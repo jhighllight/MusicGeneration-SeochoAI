@@ -71,9 +71,9 @@ class AIModelHandler:
             audio_data = audio_values[0, 0].cpu().numpy()
             
             # Normalize audio data
-            volume_factor = 0.13  # 볼륨 조절
+            volume_factor = 0.02  # 볼륨 조절
             #audio_data = np.int16(audio_data / np.max(np.abs(audio_data)) * 32767)
-            audio_data = audio_data / np.max(np.abs(audio_data)) * 12767 * volume_factor
+            audio_data = audio_data / np.max(np.abs(audio_data)) * 767 * volume_factor
             audio_data = np.int16(audio_data)
             
             # Create AudioSegment
