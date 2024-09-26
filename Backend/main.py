@@ -88,22 +88,44 @@ async def generate_music_task(task_id: str, prompt: str, duration: int, num_gene
             tasks[task_id]["progress"] = int((i / num_generations) * 100)
             varied_prompt = f"{optimized_prompt}, variation {i+1}"
             audio_segment = await model_handler.generate_music(varied_prompt, duration)
-            audio_array = np.array(audio_segment.get_array_of_samples())
-            combined_audio = np.concatenate([combined_audio, audio_array])
+
+            audio_array = np.array(audio_segment.get_array_of_samples(), dtype=np.float64)
+
+            expected_length = duration * model_handler.get_sampling_rate()
+            if audio_array.shape[0] != expected_length:
+                logger.warning(f"Segment {i+1} length mismatch. Expected {expected_length}, got {audio_array.shape[0]}. Trimming...")
+                audio_array = audio_array[:expected_length]
+            if combined_audio.size == 0:
+                combined_audio = audio_array
+            else:
+                combined_audio = np.concatenate([combined_audio, audio_array])
+                logger.info(f"Combined audio shape after {i+1} iterations: {combined_audio.shape}")
+            
             await asyncio.sleep(0.1)
+
+        if num_generations > 1:
+            crossfade_duration = int(0.5 * model_handler.get_sampling_rate())
+            fade_out = np.linspace(1, 0, crossfade_duration, dtype=np.float64)
+            fade_in = np.linspace(0, 1, crossfade_duration, dtype=np.float64)
+            combined_audio[-crossfade_duration:] *= fade_out
+            combined_audio[:crossfade_duration] *= fade_in
+
+        max_abs_value = np.max(np.abs(combined_audio))
+        if max_abs_value > 0:
+            combined_audio = (combined_audio / max_abs_value) * 32767
+            combined_audio = combined_audio.astype(np.int16)
 
         file_name = f"generated_music_{task_id}.wav"
         file_path = os.path.join(AUDIO_DIR, file_name)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-        sf.write(file_path, combined_audio, model_handler.get_sampling_rate(), subtype='PCM_24')
+        sf.write(file_path, combined_audio, model_handler.get_sampling_rate(), subtype='PCM_16')
 
         tasks[task_id]["status"] = "completed"
         tasks[task_id]["progress"] = 100
-        tasks[task_id]["file_url"] = f"/audio/{file_name}"  # URL 경로 수정
+        tasks[task_id]["file_url"] = f"/audio/{file_name}"
         tasks[task_id]["message"] = f"Music generated successfully ({num_generations} variations)"
-
         logger.info(f"Music generated successfully: {file_path}")
+    
     except Exception as e:
         logger.error(f"Error generating music: {str(e)}")
         tasks[task_id]["status"] = "failed"
