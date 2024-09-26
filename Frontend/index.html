@@ -1,94 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MusicGen AI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
-    <style>
-      body {
-        background-color: #343541;
-        color: #ececf1;
-        font-family: Arial, sans-serif;
-      }
-      #root {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .chat-container {
-        background-color: #444654;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        max-height: 500px;
-        overflow-y: auto;
-        padding: 10px;
-      }
-      .message {
-        padding: 10px 20px;
-        margin: 10px 0;
-        border-radius: 4px;
-      }
-      .user-message {
-        background-color: #343541;
-      }
-      .ai-message {
-        background-color: #444654;
-      }
-      .input-container {
-        display: flex;
-        margin-top: 20px;
-      }
-      #prompt {
-        flex-grow: 1;
-        margin-right: 10px;
-        background-color: #40414f;
-        border-color: #565869;
-        color: #ececf1;
-      }
-      .ant-input-affix-wrapper > input.ant-input {
-        background-color: #40414f;
-        color: #ececf1;
-      }
-      .ant-btn-primary {
-        background-color: #10a37f;
-        border-color: #10a37f;
-      }
-      .ant-btn-primary:hover, .ant-btn-primary:focus {
-        background-color: #1a7f64;
-        border-color: #1a7f64;
-      }
-      .logo {
-        width: 40px;
-        height: 40px;
-        margin-right: 10px;
-      }
-      .header {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      .logo-container {
-        display: flex;
-        align-items: center;
-      }
-      .logo-text {
-        font-size: 24px;
-        font-weight: bold;
-        margin-left: 10px;
-        background: linear-gradient(45deg, #10a37f, #1a7f64);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/index.jsx"></script>
-  </body>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicGen AI</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/4.16.13/antd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #343541;
+      color: #ececf1;
+      font-family: Arial, sans-serif;
+    }
+
+    #root {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .chat-container {
+      background-color: #444654;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .message {
+      padding: 10px 20px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+
+    .user-message {
+      background-color: #343541;
+    }
+
+    .ai-message {
+      background-color: #444654;
+    }
+
+    .input-container {
+      display: flex;
+      margin-top: 20px;
+    }
+
+    #prompt {
+      flex-grow: 1;
+      margin-right: 10px;
+      background-color: #40414f;
+      border-color: #565869;
+      color: #ececf1;
+    }
+
+    .ant-input-affix-wrapper>input.ant-input {
+      background-color: #40414f;
+      color: #ececf1;
+    }
+
+    .ant-btn-primary {
+      background-color: #10a37f;
+      border-color: #10a37f;
+    }
+
+    .ant-btn-primary:hover,
+    .ant-btn-primary:focus {
+      background-color: #1a7f64;
+      border-color: #1a7f64;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      margin-left: 10px;
+      background: linear-gradient(45deg, #10a37f, #1a7f64);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/index.jsx"></script>
+</body>
+
 </html>
