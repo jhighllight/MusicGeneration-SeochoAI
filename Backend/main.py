@@ -1,6 +1,6 @@
 import os
 from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, Form
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, Dict
 import json
@@ -45,31 +45,28 @@ async def generate_music(
     try:
         structured_input_dict = json.loads(structured_input) if structured_input else None
 
-        music_request = MusicGenerationRequest(
-            free_input=free_input,
-            duration=duration,
-            repeat_count=repeat_count,
-            structured_input=structured_input_dict
-        )
-
         task_id = str(uuid.uuid4())
-        background_tasks.add_task(generate_music_task, task_id, music_request, melody_file)
+        background_tasks.add_task(generate_music_task, task_id, free_input, structured_input_dict, duration, repeat_count, melody_file)
         return MusicGenerationResponse(task_id=task_id)
     except Exception as e:
         logger.error(f"Error in generate_music: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-async def generate_music_task(task_id: str, music_request: MusicGenerationRequest, melody_file: Optional[UploadFile]):
+async def generate_music_task(task_id: str, free_input: str, structured_input: Optional[dict], duration: int, repeat_count: int, melody_file: Optional[UploadFile]):
     try:
         tasks[task_id] = TaskStatusResponse(status="processing", message="Starting music generation", progress=0, files=[])
         
         melody_data = await melody_file.read() if melody_file else None
-        result = await model_handler.generate_music(music_request, melody_data)
+        optimized_prompt, audio_segment = await model_handler.process_music_generation(
+            free_input=free_input,
+            structured_input=structured_input,
+            duration=duration,
+            repeat_count=repeat_count
+        )
         
         file_name = f"generated_music_{task_id}.wav"
         file_path = os.path.join(temp_dir, file_name)
-        with open(file_path, "wb") as f:
-            f.write(result.audio_data)
+        audio_segment.export(file_path, format="wav")
         
         tasks[task_id] = TaskStatusResponse(
             status="completed",
@@ -78,7 +75,7 @@ async def generate_music_task(task_id: str, music_request: MusicGenerationReques
             files=[GeneratedFile(
                 wav_file_name=file_name,
                 wav_file_url=f"/api/stream/{task_id}",
-                optimized_prompt=result.optimized_prompt
+                optimized_prompt=optimized_prompt
             )]
         )
     except asyncio.CancelledError:
@@ -101,16 +98,12 @@ async def stream_audio(task_id: str):
         raise HTTPException(status_code=404, detail="Audio not found")
     return StreamingResponse(open(file_path, "rb"), media_type="audio/wav")
 
-@app.get("/api/download/{task_id}")
-async def download_audio(task_id: str):
-    file_path = os.path.join(temp_dir, f"generated_music_{task_id}.wav")
+@app.get("/api/download/{file_name}")
+async def download_audio(file_name: str):
+    file_path = os.path.join(temp_dir, file_name)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Audio not found")
-    return StreamingResponse(
-        open(file_path, "rb"),
-        media_type="audio/wav",
-        headers={"Content-Disposition": f"attachment; filename=generated_music_{task_id}.wav"}
-    )
+    return FileResponse(file_path, media_type="audio/wav", filename=file_name)
 
 if __name__ == "__main__":
     import uvicorn

@@ -28,7 +28,7 @@ function App() {
   const [taskId, setTaskId] = useState(null);
   const [generatedFiles, setGeneratedFiles] = useState([]);
   const [playingStates, setPlayingStates] = useState({});
-  const [audioDurations, setAudioDurations] = useState({});
+  const [notificationShown, setNotificationShown] = useState(false);
   const audioRefs = useRef({});
 
   useEffect(() => {
@@ -63,9 +63,10 @@ function App() {
     setIsLoading(true);
     setProgress(0);
     setGeneratedFiles([]);
+    setNotificationShown(false);  // 새로운 생성 시작 시 알림 상태 초기화
 
     const formData = new FormData();
-    formData.append('free_input', input.trim() || '멜로디 파일 기반 음악 생성');
+    formData.append('free_input', input.trim() || '음악 생성');
     formData.append('duration', duration.toString());
     formData.append('repeat_count', repeatCount.toString());
     
@@ -108,25 +109,48 @@ function App() {
         setGeneratedFiles(files);
         setIsLoading(false);
         setTaskId(null);
-        message.success('음악이 성공적으로 생성되었습니다!');
+        if (!notificationShown) {
+          message.success('음악이 성공적으로 생성되었습니다!');
+          setNotificationShown(true);
+        }
       } else if (status === 'failed') {
         setIsLoading(false);
         setTaskId(null);
-        message.error(`음악 생성 실패: ${statusMessage}`);
+        if (!notificationShown) {
+          message.error(`음악 생성 실패: ${statusMessage}`);
+          setNotificationShown(true);
+        }
       }
     } catch (error) {
       console.error('작업 상태 확인 중 오류:', error);
-      message.error('작업 상태를 확인하지 못했습니다');
+      if (!notificationShown) {
+        message.error('작업 상태를 확인하지 못했습니다');
+        setNotificationShown(true);
+      }
     }
   };
 
-  const handleDownload = (fileName) => {
-    const link = document.createElement('a');
-    link.href = `${API_URL}/api/download/${fileName}`;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (fileName) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/download/${fileName}`, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('파일 다운로드 중 오류 발생:', error);
+      message.error('파일 다운로드에 실패했습니다.');
+    }
   };
 
   const handleStructuredInputChange = (field, value) => {
@@ -350,7 +374,7 @@ function App() {
                       </Button>
                     ]}
                     extra={
-                      <Space direction="vertical" align="end">
+                      <Space direction="horizontal" align="center">
                         <Button
                           type="primary"
                           shape="circle"
@@ -358,13 +382,11 @@ function App() {
                           onClick={() => handlePlayPause(file.wav_file_name)}
                           size="large"
                         />
-                        <Text>{formatTime(audioDurations[file.wav_file_name] || 0)}</Text>
                       </Space>
                     }
                   >
                     <List.Item.Meta
                       title={<Text strong style={{ fontSize: '18px' }}>{`생성된 음악 ${index + 1}`}</Text>}
-                      description={<Paragraph style={{ fontSize: '16px' }}>{file.optimized_prompt}</Paragraph>}
                     />
                     <audio
                       ref={(el) => audioRefs.current[file.wav_file_name] = el}
