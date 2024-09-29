@@ -9,6 +9,9 @@ StreamSonic은 라이브 스트리머를 위해 특별히 설계된 혁신적인
 
 ![StreamSonic](https://github.com/user-attachments/assets/1ac7276b-1b88-4bb0-8071-c3c8eb6d870d)
 
+## 프로젝트 기간
+2024.08.26 ~ 2024.09.29
+
 ## 주요 기능
 
 1. AI 기반 음악 생성: 고급 AI 모델을 사용하여 사용자 입력을 바탕으로 독특한 음악을 생성합니다.
